@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ album_name }} 相册</title>
+</head>
+<body>
+    <h1>{{ album_name }} 相册</h1>
+
+    <form action="/album/{{ album_id }}" method="post" enctype="multipart/form-data">
+        <label for="photo">选择照片：</label>
+        <input type="file" id="photo" name="photo" accept="image/*" required>
+        <button type="submit">上传照片</button>
+    </form>
+    
+    <ul>
+        {% for photo in photos %}
+            <li>{{ photo }}</li>
+        {% end %}
+    </ul>
+</body>
+</html>
