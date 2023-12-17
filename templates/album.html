@@ -2,20 +2,117 @@
 <html>
 <head>
     <title>{{ album_name }} 相册</title>
+    <style>
+        h1 {
+            text-align: center;
+        }
+        img {
+            max-width: 150px;
+            max-height: 150px;
+        }
+        .photo-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .photo-item {
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
     <h1>{{ album_name }} 相册</h1>
+    <a href="/">返回相册页</a>
+
 
     <form action="/album/{{ album_id }}" method="post" enctype="multipart/form-data">
         <label for="photo">选择照片：</label>
         <input type="file" id="photo" name="photo" accept="image/*" required>
         <button type="submit">上传照片</button>
     </form>
+
     
-    <ul>
-        {% for photo in photos %}
-            <li>{{ photo }}</li>
+    <!-- 搜索表单 -->
+    <form action="/album/{{ album_id }}" method="get">
+        <label for="search_tag">搜索标签：</label>
+        <input type="text" id="search_tag" name="search_tag" required>
+        <button type="submit">搜索</button>
+    </form>
+
+    <div class="photo-container">
+        {% if search_tag %}
+            {% for photo in album.filter_photos_by_tag(search_tag) %}
+                <div class="photo-item">
+                    <img src="{{ static_url(photo.album_id + '/' + photo.name) }}" alt="{{ photo.name }}">
+                    <p>{{ photo.name }}--{{ photo.tags }}</p>
+                    <form action="/album/{{ album_id }}" method="post">
+                        <input type="hidden" name="action" value="rename">
+                        <label for="new_photo_name">新名称：</label>
+                        <input type="text" id="new_photo_name" name="new_photo_name" required>
+                        <input type="hidden" id="photo_id_to_rename" name="photo_id_to_rename" value="{{ photo.id }}">
+                        <button type="submit">重命名</button>
+                    </form>
+                    
+                    <form action="/album/{{ album_id }}" method="post">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="photo_id_to_delete" value="{{ photo.id }}">
+                        <button type="submit">删除</button>
+                    </form>
+                    
+                    <!-- 添加标签表单 -->
+                    <form action="/album/{{ album_id }}" method="post">
+                        <input type="hidden" name="action" value="add_tag">
+                        <label for="new_tag">新标签：</label>
+                        <input type="text" id="new_tag" name="new_tag" required>
+                        <input type="hidden" id="photo_id_to_tag" name="photo_id_to_tag" value="{{ photo.id }}">
+                        <button type="submit">添加标签</button>
+                    </form>
+                </div>
+            {% end %}
+        {% else %}
+            {% for i,photo in enumerate(photos) %}
+                {% block photo_item %}
+                <div class="photo-item">
+                    <img src="{{ static_url(photo.album_id + '/' + photo.name) }}" alt="{{ photo.name }}">
+                    <p>{{ photo.name }}--{{ photo.tags }}</p>
+                    <form action="/album/{{ album_id }}" method="post">
+                        <!-- ... 其他输入域 ... -->
+                        <input type="hidden" name="action" value="rename">
+                        <label for="new_photo_name">新名称：</label>
+                        <input type="text" id="new_photo_name" name="new_photo_name" required>
+                        <input type="hidden" id="photo_id_to_rename" name="photo_id_to_rename" value="{{ photo.id }}">
+                        <button type="submit">重命名</button>
+                    </form>
+                    
+                    <form action="/album/{{ album_id }}" method="post">
+                        <!-- ... 其他输入域 ... -->
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="photo_id_to_delete" value="{{ photo.id }}">
+                        <button type="submit">删除</button>
+                    </form>
+                    
+                    <!-- 添加标签表单 -->
+                    <form action="/album/{{ album_id }}" method="post">
+                        <input type="hidden" name="action" value="add_tag">
+                        <label for="new_tag">新标签：</label>
+                        <input type="text" id="new_tag" name="new_tag" required>
+                        <input type="hidden" id="photo_id_to_tag" name="photo_id_to_tag" value="{{ photo.id }}">
+                        <button type="submit">添加标签</button>
+                    </form>
+                </div>
+                {% end %}
+                {% if i > 0 %}
+                <a href="/album/{{ album_id }}?photo_index={{ i - 1 }}">上一张</a>
+                {% end %}
+
+                {% if i < len(photos) - 1 %}
+                <a href="/album/{{ album_id }}?photo_index={{ i + 1 }}">下一张</a>
+                {% end %}
+            {% end %}
         {% end %}
-    </ul>
+    </div>
+
+
+
+
 </body>
 </html>
